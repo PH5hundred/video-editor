@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { execFile } = require('child_process');
@@ -14,6 +14,17 @@ function createWindow() {
     },
   });
   win.loadFile(path.join(__dirname, 'index.html'));
+
+  // Silent on failure (offline, rate-limited, repo not reachable yet) — this
+  // is a background courtesy check, not something that should ever block or
+  // alarm the user on launch. Only tell the renderer when there's actually
+  // something newer.
+  win.webContents.once('did-finish-load', async () => {
+    const result = await checkForUpdate().catch(() => null);
+    if (result && result.ok && result.hasUpdate) {
+      win.webContents.send('update-available', result);
+    }
+  });
 }
 
 app.whenReady().then(createWindow);
@@ -133,5 +144,56 @@ ipcMain.handle('get-recent-projects', async () => {
 
 ipcMain.handle('remove-recent-project', async (event, filePath) => {
   removeRecent(filePath);
+  return { ok: true };
+});
+
+// --- Update check (GitHub Releases) ---
+//
+// Not a silent auto-installer: Electron's built-in auto-update mechanism
+// (Squirrel.Mac on macOS) requires the old and new build to share a real
+// Apple code-signing identity, which an ad-hoc-signed, unnotarized build
+// does not have — it would fail every time. This instead checks the
+// repo's latest GitHub release, compares it to this build's own version,
+// and — only when there's actually something newer — lets the user open
+// the release page themselves. Simple, honest, and does not pretend to be
+// more automatic than it is.
+
+const GITHUB_OWNER = 'PH5hundred';
+const GITHUB_REPO = 'video-editor';
+
+function isNewerVersion(latest, current) {
+  const a = latest.replace(/^v/, '').split('.').map(Number);
+  const b = current.replace(/^v/, '').split('.').map(Number);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const ai = a[i] || 0;
+    const bi = b[i] || 0;
+    if (ai > bi) return true;
+    if (ai < bi) return false;
+  }
+  return false;
+}
+
+async function checkForUpdate() {
+  const response = await fetch(
+    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`,
+    { headers: { 'User-Agent': 'video-editor-app', Accept: 'application/vnd.github+json' } }
+  );
+  if (!response.ok) return { ok: false, reason: `GitHub API ${response.status}` };
+  const release = await response.json();
+  const latestVersion = release.tag_name;
+  const currentVersion = app.getVersion();
+  return {
+    ok: true,
+    hasUpdate: isNewerVersion(latestVersion, currentVersion),
+    latestVersion,
+    currentVersion,
+    url: release.html_url,
+  };
+}
+
+ipcMain.handle('check-for-update', async () => checkForUpdate().catch((error) => ({ ok: false, reason: error.message })));
+
+ipcMain.handle('open-external', async (event, url) => {
+  await shell.openExternal(url);
   return { ok: true };
 });

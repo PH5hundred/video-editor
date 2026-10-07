@@ -1,9 +1,13 @@
 {
   "name": "video-editor",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "description": "Local desktop multitrack video editor (Clipchamp-inspired UI).",
   "main": "src/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PH5hundred/video-editor.git"
+  },
   "scripts": {
     "start": "electron .",
     "package:mac": "electron-packager . \"Video Editor\" --platform=darwin --arch=arm64 --out=dist --overwrite",

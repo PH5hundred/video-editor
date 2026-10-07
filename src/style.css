@@ -35,6 +35,29 @@ body {
   width: 480px;
   max-width: 90vw;
 }
+.update-banner {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #3d6fd6;
+  color: white;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.update-banner.visible {
+  display: flex;
+}
+.update-banner button {
+  background: white;
+  color: #1e1f22;
+}
+.check-update-btn {
+  margin-top: 14px;
+  width: 100%;
+}
 .home-card h1 {
   font-size: 26px;
   margin: 0 0 20px;

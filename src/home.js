@@ -4,6 +4,10 @@
 const newProjectBtn = document.getElementById('newProjectBtn');
 const openProjectBtn = document.getElementById('openProjectBtn');
 const recentsListEl = document.getElementById('recentsList');
+const updateBanner = document.getElementById('updateBanner');
+const updateBannerText = document.getElementById('updateBannerText');
+const updateDownloadBtn = document.getElementById('updateDownloadBtn');
+const checkUpdateBtn = document.getElementById('checkUpdateBtn');
 
 function fmtRelative(timestamp) {
   const minutes = Math.round((Date.now() - timestamp) / 60000);
@@ -74,5 +78,30 @@ openProjectBtn.addEventListener('click', async () => {
   const result = await window.editorAPI.openProjectDialog();
   if (result.ok) {
     window.App.openEditor(result.data, result.filePath);
+  }
+});
+
+function showUpdateBanner(info) {
+  updateBannerText.textContent = `Update available: ${info.latestVersion} (you have ${info.currentVersion})`;
+  updateDownloadBtn.onclick = () => window.editorAPI.openExternal(info.url);
+  updateBanner.classList.add('visible');
+}
+
+window.editorAPI.onUpdateAvailable(showUpdateBanner);
+
+checkUpdateBtn.addEventListener('click', async () => {
+  checkUpdateBtn.disabled = true;
+  checkUpdateBtn.textContent = 'Checking…';
+  const result = await window.editorAPI.checkForUpdate();
+  checkUpdateBtn.disabled = false;
+  if (result.ok && result.hasUpdate) {
+    showUpdateBanner(result);
+    checkUpdateBtn.textContent = 'Check for Updates';
+  } else if (result.ok) {
+    checkUpdateBtn.textContent = 'Up to date ✓';
+    setTimeout(() => { checkUpdateBtn.textContent = 'Check for Updates'; }, 2500);
+  } else {
+    checkUpdateBtn.textContent = 'Check failed';
+    setTimeout(() => { checkUpdateBtn.textContent = 'Check for Updates'; }, 2500);
   }
 });

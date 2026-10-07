@@ -5,9 +5,12 @@
   "description": "Local desktop multitrack video editor (Clipchamp-inspired UI).",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "package:mac": "electron-packager . \"Video Editor\" --platform=darwin --arch=arm64 --out=dist --overwrite",
+    "postpackage:mac": "node scripts/zip-mac.cjs && node scripts/drive-drop.cjs"
   },
   "devDependencies": {
+    "@electron/packager": "^20.3.0",
     "electron": "^33.0.0"
   },
   "dependencies": {

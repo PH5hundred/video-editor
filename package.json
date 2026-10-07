@@ -7,17 +7,20 @@
   "scripts": {
     "start": "electron .",
     "package:mac": "electron-packager . \"Video Editor\" --platform=darwin --arch=arm64 --out=dist --overwrite",
-    "postpackage:mac": "node scripts/zip-mac.cjs && node scripts/drive-drop.cjs"
+    "postpackage:mac": "node scripts/make-dmg.cjs && node scripts/drive-drop.cjs"
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",
-    "electron": "^33.0.0"
+    "electron": "^33.0.0",
+    "electron-installer-dmg": "^5.0.1"
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0"
   },
   "allowScripts": {
     "electron@33.4.11": true,
-    "ffmpeg-static@5.3.0": true
+    "ffmpeg-static@5.3.0": true,
+    "fs-xattr@0.3.1": true,
+    "macos-alias@0.2.12": true
   }
 }

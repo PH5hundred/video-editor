@@ -41,11 +41,11 @@ function ensureFolder(target) {
   return run(`require("fs").mkdirSync(${JSON.stringify(target)}, {recursive: true})`, DEADLINE_MS);
 }
 
-function findBuildZips() {
+function findBuildArtifacts() {
   if (!fs.existsSync(DIST_DIR)) return [];
   return fs
     .readdirSync(DIST_DIR)
-    .filter((name) => /^Video Editor-.*\.zip$/.test(name))
+    .filter((name) => /^Video Editor-.*\.(dmg|zip)$/.test(name))
     .map((name) => path.join(DIST_DIR, name));
 }
 
@@ -79,9 +79,9 @@ function findTargets() {
 }
 
 function main() {
-  const zips = findBuildZips();
-  if (zips.length === 0) {
-    console.log('drive-drop: no build zip in dist/ — nothing to copy');
+  const artifacts = findBuildArtifacts();
+  if (artifacts.length === 0) {
+    console.log('drive-drop: no build artifact in dist/ — nothing to copy');
     return;
   }
 
@@ -92,7 +92,7 @@ function main() {
   }
 
   for (const target of targets) {
-    for (const source of zips) {
+    for (const source of artifacts) {
       const destination = path.join(target, path.basename(source));
       const ok = run(
         `require("fs").copyFileSync(${JSON.stringify(source)}, ${JSON.stringify(destination)})`,

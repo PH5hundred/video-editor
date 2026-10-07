@@ -2,24 +2,58 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Video Editor — Spike</title>
+<title>Video Editor</title>
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="toolbar">
-    <button id="addTrackBtn">+ Add Track</button>
-    <button id="exportBtn" disabled>Export Selected Clip…</button>
-    <span class="status" id="status">No clip loaded</span>
+
+  <div id="homeView" class="home-view">
+    <div class="home-card">
+      <h1>Video Editor</h1>
+      <div class="home-actions">
+        <button id="newProjectBtn">+ New Project</button>
+        <button id="openProjectBtn">Open Project…</button>
+      </div>
+      <h2>Recent Projects</h2>
+      <div id="recentsList" class="recents-list"></div>
+    </div>
   </div>
 
-  <div class="preview">
-    <video id="video" controls></video>
+  <div id="editorView" class="editor-view">
+    <div class="toolbar">
+      <button id="homeBtn" class="small">⟵ Home</button>
+      <input id="projectNameInput" class="project-name" value="Untitled Project" />
+      <span class="divider"></span>
+      <button id="undoBtn" class="small" disabled>Undo</button>
+      <button id="redoBtn" class="small" disabled>Redo</button>
+      <span class="divider"></span>
+      <button id="addTrackBtn" class="small">+ Add Track</button>
+      <button id="deleteClipBtn" class="small" disabled>Delete Clip</button>
+      <button id="duplicateClipBtn" class="small" disabled>Duplicate Clip</button>
+      <span class="divider"></span>
+      <button id="zoomOutBtn" class="small">− Zoom</button>
+      <button id="zoomInBtn" class="small">+ Zoom</button>
+      <span class="divider"></span>
+      <button id="saveBtn" class="small">Save</button>
+      <span class="status" id="saveStatus">All changes saved</span>
+    </div>
+
+    <div class="preview">
+      <video id="video" controls></video>
+    </div>
+
+    <div class="export-bar">
+      <button id="exportBtn" disabled>Export Selected Clip…</button>
+      <span class="status" id="exportStatus"></span>
+    </div>
+
+    <div class="timeline-wrap">
+      <div id="tracks"></div>
+    </div>
   </div>
 
-  <div class="timeline-wrap">
-    <div id="tracks"></div>
-  </div>
-
-  <script src="renderer.js"></script>
+  <script src="home.js"></script>
+  <script src="editor.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

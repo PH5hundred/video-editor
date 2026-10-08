@@ -1,6 +1,6 @@
 {
   "name": "video-editor",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Local desktop multitrack video editor (Clipchamp-inspired UI).",
   "main": "src/main.js",

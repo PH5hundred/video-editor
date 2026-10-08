@@ -1,0 +1,34 @@
+name: Release
+
+# Pushing a version tag (e.g. `git tag v0.1.1 && git push --tags`) builds the
+# mac DMG and publishes it as a GitHub Release automatically — this is what
+# the app's own update checker (src/main.js, checkForUpdate) polls, so this
+# workflow is the "supply side" of that feature. No local build or manual
+# `gh release create` needed for a new version to go out.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - run: npm run package:mac
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Video Editor-mac-*.dmg
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

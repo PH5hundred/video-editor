@@ -25,6 +25,17 @@ async function main() {
     title: 'Video Editor',
     out: distDir,
     overwrite: true,
+    // electron-installer-dmg's default background.png is 658x498px. Without
+    // an explicit window size it falls back to the background's own pixel
+    // dimensions — which should match, but left a visible white gap to the
+    // right of the artwork in practice. Pinning it explicitly removes any
+    // ambiguity between the background image's size and the window Finder
+    // actually opens.
+    additionalDMGOptions: {
+      window: {
+        size: { width: 658, height: 498 },
+      },
+    },
   });
 
   // createDMG names its output "<name>.dmg" with no arch suffix — rename to

@@ -5,11 +5,16 @@ name: Release
 # the app's own update checker (src/main.js, checkForUpdate) polls, so this
 # workflow is the "supply side" of that feature. No local build or manual
 # `gh release create` needed for a new version to go out.
+#
+# `workflow_dispatch` lets this run manually (Actions tab, or `gh workflow
+# run`) without creating a real version tag/release — useful for debugging
+# the build itself; the publish step only runs on an actual tag push.
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -28,7 +33,23 @@ jobs:
 
       - run: npm run package:mac
 
+      # A broken signature on the packaged .app is invisible until Gatekeeper
+      # sees it quarantined (e.g. downloaded via a browser) and reports "is
+      # damaged and can't be opened" — these two steps fail the build instead
+      # of shipping that silently, and pinpoint whether a break happens
+      # during packaging/signing or during DMG creation.
+      - name: Verify packaged app signature
+        run: node scripts/verify-codesign.cjs "dist/Video Editor-darwin-arm64/Video Editor.app"
+
+      - name: Verify DMG's own copy of the app signature
+        run: |
+          MOUNT=$(mktemp -d)
+          hdiutil attach "dist/Video Editor-mac-arm64.dmg" -nobrowse -mountpoint "$MOUNT"
+          node scripts/verify-codesign.cjs "$MOUNT/Video Editor.app"
+          hdiutil detach "$MOUNT"
+
       - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: dist/Video Editor-mac-*.dmg

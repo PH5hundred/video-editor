@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 const { createDMG } = require('electron-installer-dmg');
 
 const distDir = path.join(__dirname, '..', 'dist');
@@ -17,6 +18,18 @@ async function main() {
     console.error(`make-dmg: no packaged app at ${appPath} — run npm run package:mac first`);
     process.exit(1);
   }
+
+  // electron-packager's raw output only carries the linker's signature on the
+  // main executable — the bundle's Frameworks/Helpers/Resources aren't
+  // sealed, so Gatekeeper reports it as "damaged" the moment it's quarantined
+  // (e.g. downloaded via a browser), not just "unidentified developer". A
+  // full `--deep` ad-hoc re-sign covers the whole bundle and fixes that; it's
+  // still not a real Apple Developer ID, so first launch will still prompt
+  // "unidentified developer" — that part needs a paid account to remove
+  // (same $99/yr enrollment this project's mobile app is already blocked on
+  // for TestFlight), but it won't call the app damaged.
+  execFileSync('codesign', ['--force', '--deep', '--sign', '-', appPath], { stdio: 'inherit' });
+
   fs.rmSync(dmgPath, { force: true });
 
   await createDMG({
